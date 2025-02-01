@@ -3,7 +3,7 @@ from tkinter import messagebox
 import os
 
 # File to store progress
-SAVE_FILE = "progress.txt"
+SAVE_FILE = "progress"
 
 # Function to check and create the file if it doesn't exist
 def initialize_file():
