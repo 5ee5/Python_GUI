@@ -9,25 +9,25 @@ On linux you can install python with you system's package manager.
 Arch:
 ```bash
 sudo pacman -S python
-sudo pacman -S python tk
+sudo pacman -S pyqt
 ```
 
 Ubuntu:
 ```bash
 sudo apt install python
-sudo apt install python tk
+sudo apt install pyqt
 ```
 
 Fedora: 
 ```bash
 sudo dnf install python
-sudo dnf install python tk
+sudo dnf install pyqt
 ```
 
 Gentoo:
 ```bash
 sudo emerge python
-sudo emerge python tk
+sudo emerge pyqt
 ```
 
 Then you can just run the in the following ways:
