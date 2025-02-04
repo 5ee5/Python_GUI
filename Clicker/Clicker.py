@@ -1,5 +1,5 @@
-from tkinter import *
-from tkinter import messagebox
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QMessageBox
+import sys
 import os
 
 # File to store progress
@@ -20,61 +20,105 @@ def load_progress():
             return 0  # Default if file is corrupted
 
 # Function to save progress
-def save_progress():
+def save_progress(count):
     with open(SAVE_FILE, "w") as file:
         file.write(str(count))
 
-# Function to reset progress
-def reset_progress():
-    global count
-    count = 0
-    save_progress()
-    lbl.configure(text="The button was clicked: 0 times")
+class ClickCounter(QWidget):
+    def __init__(self):
+        super().__init__()
 
-# Function to handle exiting the application
-def exit_app():
-    save_progress()  # Ensure progress is saved before exit
-    root.quit()  # Close the application
+        self.setWindowTitle("Click Counter - PyQt6")
+        self.setGeometry(100, 100, 350, 250)  # Window size
+        self.setStyleSheet("background-color: #222; color: white;")  # Dark theme
 
-# Ensure the progress file exists before loading
-initialize_file()
+        # Ask if user wants to resume previous progress
+        initialize_file()
+        resume = QMessageBox.question(self, "Resume Progress", "Do you want to resume your previous progress?",
+                                      QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
 
-# Ask the user if they want to resume progress
-resume = messagebox.askyesno("Resume Progress", "Do you want to resume your previous progress?")
-count = load_progress() if resume else 0
+        self.count = load_progress() if resume == QMessageBox.StandardButton.Yes else 0
 
-# Create main window
-root = Tk()
-root.title("Click Counter")
-root.geometry('350x250')
+        self.initUI()
 
-# Label to display count
-lbl = Label(root, text=f"The button was clicked: {count} times", font=("Arial", 12))
-lbl.grid(column=0, row=0, columnspan=2, pady=20)
+    def initUI(self):
+        layout = QVBoxLayout()
 
-# Function to handle button click
-def clicked():
-    global count
-    count += 1
-    lbl.configure(text=f"The button was clicked: {count} times")
-    save_progress()  # Save progress after each click
+        # Label to display count
+        self.label = QLabel(f"The button was clicked: {self.count} times", self)
+        self.label.setStyleSheet("font-size: 18px; color: white; padding: 10px;")
+        layout.addWidget(self.label)
 
-# Button to click
-btn = Button(root, text="Click Me", fg="red", command=clicked, font=("Arial", 12))
-btn.grid(column=0, row=1, columnspan=2, pady=10)
+        # Click button
+        self.click_btn = QPushButton("Click Me", self)
+        self.click_btn.setStyleSheet("""
+            QPushButton {
+                font-size: 16px; background: #444; color: white; padding: 10px;
+                border-radius: 10px; border: 2px solid #666;
+            }
+            QPushButton:hover {
+                background: #555;
+            }
+            QPushButton:pressed {
+                background: #777;
+            }
+        """)
+        self.click_btn.clicked.connect(self.clicked)
+        layout.addWidget(self.click_btn)
 
-# Button to reset progress
-reset_btn = Button(root, text="Reset Progress", fg="blue", command=reset_progress, font=("Arial", 10))
-reset_btn.grid(column=0, row=2, columnspan=2, pady=10)
+        # Reset button
+        self.reset_btn = QPushButton("Reset Progress", self)
+        self.reset_btn.setStyleSheet("""
+            QPushButton {
+                font-size: 14px; background: #007acc; color: white; padding: 8px;
+                border-radius: 10px; border: 2px solid #005a9e;
+            }
+            QPushButton:hover {
+                background: #008be6;
+            }
+            QPushButton:pressed {
+                background: #005a9e;
+            }
+        """)
+        self.reset_btn.clicked.connect(self.reset_progress)
+        layout.addWidget(self.reset_btn)
 
-# **Exit Button**
-exit_btn = Button(root, text="Exit", fg="black", bg="lightgray", command=exit_app, font=("Arial", 10))
-exit_btn.grid(column=0, row=3, columnspan=2, pady=10)
+        # Exit button
+        self.exit_btn = QPushButton("Exit", self)
+        self.exit_btn.setStyleSheet("""
+            QPushButton {
+                font-size: 14px; background: #888; color: black; padding: 8px;
+                border-radius: 10px; border: 2px solid #666;
+            }
+            QPushButton:hover {
+                background: #999;
+            }
+            QPushButton:pressed {
+                background: #555;
+            }
+        """)
+        self.exit_btn.clicked.connect(self.exit_app)
+        layout.addWidget(self.exit_btn)
 
-# Center align widgets
-root.grid_columnconfigure(0, weight=1)
-root.grid_columnconfigure(1, weight=1)
+        self.setLayout(layout)
 
-# Start the application
-root.mainloop()
+    def clicked(self):
+        self.count += 1
+        self.label.setText(f"The button was clicked: {self.count} times")
+        save_progress(self.count)
+
+    def reset_progress(self):
+        self.count = 0
+        save_progress(self.count)
+        self.label.setText("The button was clicked: 0 times")
+
+    def exit_app(self):
+        save_progress(self.count)  # Save progress before exiting
+        self.close()
+
+# Run the application
+app = QApplication(sys.argv)
+window = ClickCounter()
+window.show()
+sys.exit(app.exec())
 
